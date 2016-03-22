@@ -1,0 +1,129 @@
+CREATE TABLE IF NOT EXISTS traffic_data 
+(Organization_Identification_ID STRING,
+Department_Name STRING,
+Organization_Activity_Text STRING,
+Reporting_Officer_Identification_ID STRING,
+Intervention_Identification_ID STRING,
+Identification_Category_Description_Text STRING,
+Intervention_Date DATE,
+Day_Of_Week STRING,
+Subject_Race_Code STRING,
+Subject_Ethnicity_Code STRING,
+Subject_Sex_Code STRING,
+Subject_Age_Code BIGINT,
+Resident_Indicator BOOLEAN,
+Town_Resident_Indicator BOOLEAN,
+Intervention_Location_Name STRING,
+Intervention_Location_Description_Text STRING,
+Intervention_Reason_Code STRING,
+Intervention_Technique_Code STRING,
+Intervention_Duration_Code BIGINT,
+Towed_Indicitator BOOLEAN,
+Status_Code_Identification_ID STRING,
+Statue_Code_Description STRING,
+Statutatory_Citation STRING,
+Vehicle_Search_Indicator BOOLEAN,
+Search_Authorization_Code STRING,
+Contraband_Indicator BOOLEAN,
+Custodial_Arrest_Indicator BOOLEAN,
+Intervention_Disposition_Code STRING,
+Intervention_Time DATE)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' 
+STORED AS TEXTFILE
+TBLPROPERTIES("skip.header.line.count"="1");
+
+LOAD DATA INPATH '/tmp/data/RACProfile.csv' OVERWRITE INTO TABLE traffic_data;
+
+--1st set of Queries
+CREATE TABLE Incident AS 
+Select  Incident_Location_Name ,  Subject_Race_Code  from traffic_data
+
+CREATE TABLE days AS 
+Select  Day_Of_Week  from traffic_data;
+
+CREATE TABLE Race AS 
+Select  Subject_Race_Code  from traffic_data;
+
+CREATE TABLE location AS 
+Select  Intervention_Location_Name from traffic_data;
+
+CREATE TABLE duration AS 
+Select  Intervention_Duration_Code  from traffic_data;
+
+CREATE TABLE disposition AS 
+Select Intervention_Disposition_Code from traffic_data;
+
+CREATE TABLE reason AS 
+Select Intervention_Reason_Code from traffic_data;
+
+CREATE TABLE Sex_code AS 
+Select  Subject_Sex_Code from traffic_data;
+
+CREATE TABLE Age AS 
+Select  Subject_Age from traffic_data;
+
+
+--Total Stops per organization and number of incidents involving nonwhites
+--Q1
+select Organization_Identification_ID, count(*) AS IncidentsPerOrg from traffic_data group by Organization_Identification_ID or Department_Name;
+--Q2
+select Organization_Identification_ID, count(*) AS IncidentsPerOrgNW from traffic_data where Subject_Race_Code <> 'W' group by Organization_Identification_ID;
+
+--Q9
+select Department_Name, count(*) AS IncidentsPerOrg 
+from traffic_data 
+group by Department_Name;
+--Q10
+select Department_Name, count(*) AS IncidentsPerOrgNW 
+from traffic_data 
+where Subject_Race_Code <> 'W' 
+group by Department_Name;
+
+--Gender and Age
+--Q3
+Select Subject_Age_Code, count(*) AS CntFemaleAge from traffic_data
+where Subject_Sex_Code = 'F'
+group by Subject_Age_Code;
+--Q13
+Select Subject_Age_Code, Subject_Race_Code, Subject_Ethnicity_Code, count(*) AS CntFemaleAge from traffic_data
+where Subject_Sex_Code = 'F'
+group by Subject_Age_Code, Subject_Race_Code, Subject_Ethnicity_Code;
+
+--Q4
+Select Subject_Age_Code, count(*) AS CntMaleAge from traffic_data
+where Subject_Sex_Code = 'M'
+group by Subject_Age_Code;
+--Q14
+Select Subject_Age_Code, Subject_Race_Code, Subject_Ethnicity_Code, count(*) AS CntMaleAge from traffic_data
+where Subject_Sex_Code = 'M'
+group by Subject_Age_Code, Subject_Race_Code, Subject_Ethnicity_Code;
+
+--Whites and intervention reason code
+--Q5
+Select Subject_Race_Code, Subject_Ethnicity_Code, Intervention_Reason_Code from traffic_data
+where Subject_Race_Code = 'W';
+
+--non-whites and intervention reason code
+--Q6
+Select Subject_Race_Code, Intervention_Reason_Code from traffic_data
+where Subject_Race_Code <> 'W';
+
+--Whites and intervention technique code
+--Q7
+Select Subject_Race_Code, Subject_Ethnicity_Code, Intervention_Technique_Code from traffic_data
+where Subject_Race_Code = 'W';
+
+--Non-Whites and intervention technique code
+--Q8
+Select Subject_Race_Code, Intervention_Technique_Code from traffic_data
+where Subject_Race_Code <> 'W';
+
+--Whites and intervention disposition code
+--Q11
+Select Subject_Race_Code, Subject_Ethnicity_Code, Intervention_Disposition_Code from traffic_data
+where Subject_Race_Code = 'W';
+
+--Non-Whites and intervention disposition code
+--Q12
+Select Subject_Race_Code, Intervention_Disposition_Code from traffic_data
+where Subject_Race_Code <> 'W';
